@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <math.h>
 
-// Declare function msleep for sleeping in milliseconds
-int msleep(unsigned int tms);
+
+int msleep(unsigned int tms); // declare custom function 'msleep' for sleeping in milliseconds
 
 #define CHILD_ID 2;
 
@@ -14,9 +14,8 @@ int main(void)
   pthread_t id; // parent id
 
   int child_id = CHILD_ID;  // declare child thread id from defined value
-
-  // Create child thread
-  pthread_create(&id, NULL, stopwatch, &child_id);
+ 
+  pthread_create(&id, NULL, stopwatch, &child_id);   // create child thread
 
   int* ptr;
 
@@ -35,8 +34,7 @@ void* stopwatch(void* child_id)
     printf("Stopwatch thread. Elapsed: %.2f seconds.", elapsed_time);
   }
 
-  // exit thread referencing global id 'i'
-  pthread_exit(&child_id);
+  pthread_exit(&child_id);  // exit thread referencing passed pointer to child_id
 }
 
 int msleep(unsigned int tms) {

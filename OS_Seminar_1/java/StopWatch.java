@@ -6,7 +6,7 @@ public class StopWatch {
     public static void main(String[] args) {
         try {
 
-            // Implicit declaration of thread function
+            // Inline declaration of thread function
             Thread t = new Thread(() -> {
                 try {
                     _threadWorkerMethod();
@@ -28,10 +28,11 @@ public class StopWatch {
         DecimalFormat format = (DecimalFormat) NumberFormat.getNumberInstance(Locale.US);
         format.setMaximumFractionDigits(2);
         float elapsedTime = 0;
-        while(Math.floor(elapsedTime) != 60) {
+
+        while(Math.floor(elapsedTime) != 500) {
             Thread.sleep(10);
-            elapsedTime += 0.01;
-            System.out.println("Stopwatch thread. Elapsed: " + format.format(elapsedTime) + " seconds.");
+            elapsedTime += 1;
+            System.out.println("Stopwatch thread. Elapsed: " + format.format(elapsedTime/100.0) + " seconds.");
         }
         return;
     }

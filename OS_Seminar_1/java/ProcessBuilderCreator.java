@@ -4,13 +4,15 @@ import java.util.*;
 import java.util.logging.FileHandler;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
+
+
 public class ProcessBuilderCreator {
     private static Logger logger = Logger.getLogger("ThreadErrorLogger");
 
     static void createProcess(String command, Logger logger) throws java.io.IOException {
         ExternalThreadWorker process = new ExternalThreadWorker(command, logger);
-        process.run();
-
+        Thread t = new Thread(process);
+        t.start();
     }
     public static void main(String[] args) throws java.io.IOException {
         String cmdLineArgument;
@@ -18,6 +20,7 @@ public class ProcessBuilderCreator {
         // External file handle
         FileHandler fh = new FileHandler("ThreadErrorLogger.log");
         fh.setFormatter(new SimpleFormatter());
+
         Logger.getLogger("ThreadErrorLogger").addHandler(fh);
         BufferedReader reader = new BufferedReader(new FileReader("ThreadErrorLogger.log"));
 
@@ -28,7 +31,7 @@ public class ProcessBuilderCreator {
         while (true) {
             System.out.print("jsh>");
             cmdLineArgument = scanner.nextLine();
-            if (cmdLineArgument.toLowerCase().equals("showerrlog")) {
+            if (cmdLineArgument.equals("showerrlog")) {
                 System.out.println("\nLIST OF ERROR LOGS\n");
                 while(reader.readLine() != null)
                 {
