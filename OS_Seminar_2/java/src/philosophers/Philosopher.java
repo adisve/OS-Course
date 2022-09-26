@@ -1,4 +1,4 @@
-package philosophers;
+package src.philosophers;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

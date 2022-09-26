@@ -1,4 +1,4 @@
-package readerwriter;
+package src.readerwriter;
 
 public class ReaderWriter {
 
@@ -15,7 +15,8 @@ public class ReaderWriter {
 	private static void createReaderThreads(Data data) {
 		Thread readerThread;
 
-		for (int i = 0; i < 5; i++) {
+		for (int i = 1; i <= 5; i++) {
+			System.out.println();
 			readerThread = new Thread(new Reader_(i, data));
 			readerThread.start();
 		}
@@ -24,7 +25,7 @@ public class ReaderWriter {
 	private static void createWriterThreads(Data data) {
 		Thread writerThread;
 
-		for (int i = 0; i < 2; i++) {
+		for (int i = 1; i <= 2; i++) {
 			writerThread = new Thread(new Writer(i, data));
 			writerThread.start();
 		}

@@ -1,4 +1,4 @@
-package readerwriter;
+package src.readerwriter;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -12,7 +12,7 @@ public class Data {
     	readerAndWriterLock = new RWLock();
     }
 
-    public void read(int id){
+    public void read(int id) throws InterruptedException{
         readerAndWriterLock.acquireRead();
         int val = myValue;
         
@@ -26,7 +26,7 @@ public class Data {
         readerAndWriterLock.releaseRead();
     }
 
-    public void write(int id, int val){
+    public void write(int id, int val) throws InterruptedException{
         readerAndWriterLock.acquireWrite();
         myValue = val;
         System.out.println("Writer:" + id + " updated the value to :" + val);

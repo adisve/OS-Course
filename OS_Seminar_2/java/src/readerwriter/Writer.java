@@ -1,4 +1,4 @@
-package readerwriter;
+package src.readerwriter;
 
 
 import java.util.logging.Level;

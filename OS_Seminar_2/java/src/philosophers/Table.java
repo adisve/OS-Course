@@ -1,4 +1,4 @@
-package philosophers;
+package src.philosophers;
 
 public class Table {
 
