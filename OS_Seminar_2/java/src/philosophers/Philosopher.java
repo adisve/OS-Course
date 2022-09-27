@@ -19,14 +19,14 @@ public class Philosopher implements Runnable{
               
                 System.out.println("Philosopher " + myId + " thinks. Iteration "+ i);
                 Thread.sleep((int)(Math.random()*100));
-                                       
+
                 myTable.getLeftChopstick(myId);
                 System.out.println("Philosopher " + myId + " pick up left");
                 Thread.sleep((int)(Math.random()*10));
-            
+
                 myTable.getRightChopstick(myId);
                 System.out.println("Philosopher " + myId + " pick up right");
-              
+
                 System.out.println("Philosopher " + myId + " eats. Iteration "+ i);
                 Thread.sleep((int)(Math.random()*100));
                

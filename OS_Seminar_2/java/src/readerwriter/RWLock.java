@@ -1,32 +1,42 @@
 package src.readerwriter;
 
-public class RWLock {
+import java.util.concurrent.locks.ReentrantLock;
 
-    private boolean locked;
+public class RWLock {
+    
+    private final ReentrantLock lock = new ReentrantLock(true);
+    /* private boolean reading;
+    private boolean writing; */
     
     public RWLock(){
-        this.locked = false;
+        /* this.reading = false;
+        this.writing = false; */
     }
 
-    public synchronized void acquireRead() throws InterruptedException {
-        while (locked) {
+    public /* synchronized */ void acquireRead() throws InterruptedException {
+        lock.lock();
+        /* while (reading || writing) {
             this.wait();
-        } this.locked = true;
+        } this.reading = true; */
     }
 
-    public synchronized void acquireWrite() throws InterruptedException {
-        while (locked) {
+    public /* synchronized */ void acquireWrite() throws InterruptedException {
+        lock.lock();
+        /* while (reading) {
             this.wait();
-        } this.locked = true;
+        } this.reading = true; this.writing = true; */
     }
 
-    public synchronized void releaseRead(){
-        this.locked = false;
-        this.notify();
+    public /* synchronized */ void releaseRead() {
+        lock.unlock();
+        /* this.reading = false;
+        this.notify(); */
     }
 
-    public synchronized void releaseWrite() {
-        this.locked = false;
-        this.notify();
+    public /* synchronized */ void releaseWrite() {
+        lock.unlock();
+        /* this.reading = false;
+        this.writing = false;
+        this.notify(); */
     }
 }
