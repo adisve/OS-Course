@@ -10,6 +10,7 @@
 #define HUNGRY 1
 #define EATING 0
 
+/****** Declare LEFT and RIGHT since they depend on an array of length 5 and can not be >= 5 or < 0 ******/
 #define LEFT (phnum + 4) % N
 #define RIGHT (phnum + 1) % N
  
@@ -20,6 +21,8 @@ int philosophers[N] = { 0, 1, 2, 3, 4 };
 sem_t mutex;
 sem_t S[N];
 
+/**** Attempt to make philosopher busy (state[phnum] = EATING) if the right and left sticks
+      are available, and the philosopher is in HUNGRY state ****/
 void check(int phnum)
 {
     if (state[phnum] == HUNGRY
@@ -103,7 +106,7 @@ int main()
         printf("Philosopher %d is thinking\n", i + 1);
     }
  
-    for (i = 0; i < N; i++)
+    for (i = 0; i < N; i++) pthread_join(thread_id[i], NULL);
  
-        pthread_join(thread_id[i], NULL);
+    return 0;
 }
