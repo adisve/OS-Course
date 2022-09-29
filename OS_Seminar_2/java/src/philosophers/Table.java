@@ -14,7 +14,9 @@ public class Table {
 	}
 
 	public synchronized void getLeftChopstick(int i) throws InterruptedException {
-		while(!chopstick[i] && !chopstick[(i+1) % chopstick.length]) this.wait(); // -> Only allow if right available
+		// Only allow a philosopher to pick up their left chopstick if
+		// both of the chopsticks are currently available
+		while(!chopstick[i] && !chopstick[(i+1) % chopstick.length]) this.wait();
 		chopstick[i] = unavailable;
 	}
 
