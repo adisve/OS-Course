@@ -21,6 +21,7 @@ public class MemoryManager {
 	private int myNumberOfpageFaults = 0;
 	private int myPageReplacementAlgorithm = 0;
 	private HashSet<Integer> myPageTableSet;
+	private HashMap<Integer, Integer> pageIndices = new HashMap<Integer, Integer>();
 	private Queue<Integer> pageQueue;
 
 	public MemoryManager(int numberOfPages, int pageSize, int numberOfFrames, String pageFile,
@@ -97,6 +98,31 @@ public class MemoryManager {
 		}
 		myNumberOfpageFaults++;
 	}
+
+	private void handlePageFaultLRU(int pageNumber) {
+		if(myNextFreeFramePosition == myNumberOfFrames) {
+			int LRU = Integer.MAX_VALUE;
+			int MIN = Integer.MIN_VALUE;
+			Arrays.asList(myPageTableSet);
+			for (int tableItem : myPageTableSet) {
+				if(pageIndices.get(tableItem) < LRU) {
+					LRU = pageIndices.get(tableItem);
+					MIN = tableItem;
+				} 
+			}
+			myPageTableSet.remove(MIN);
+			pageIndices.remove(MIN);
+			myPageTableSet.add(pageNumber);
+			pageIndices.put(pageNumber, myNextFreeFramePosition);
+		}
+		else
+		{
+			myPageTableSet.add(pageNumber);
+			pageIndices.put(pageNumber, myNextFreeFramePosition);
+			myNextFreeFramePosition++;
+		}
+		myNumberOfpageFaults++;
+	}
 	
 	private int getPageNumber(int logicalAddress) {
 		return Math.floorDiv(logicalAddress, 256);
@@ -105,8 +131,6 @@ public class MemoryManager {
 	private int getPageOffset(int logicalAddress) {
 		return logicalAddress % 256;
 	}
-
-	
 
 	private void pageFault(int pageNumber) {
 		if (myPageReplacementAlgorithm == Seminar3.NO_PAGE_REPLACEMENT)
@@ -139,11 +163,5 @@ public class MemoryManager {
 
 	
 
-	private void handlePageFaultLRU(int pageNumber) {
-		// Implement by student in task three
-		// this solution allows different size of physical and logical memory
-		// page replacement using LRU
-		// Note depending on your solution, you might need to change parts of the
-		// supplied code, this is allowed.
-	}
+	
 }
