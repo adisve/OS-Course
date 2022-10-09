@@ -20,8 +20,8 @@ public class Seminar3 {
 	public static void main(String[] args) {
 		// When running the code for the first time, you will get index out of bounds
 		// This is due to that getPageNumber(), getPageOffset() and handlePageFault() is not implemented in MemoryManager.class
-		testTaskOne();
-		//testTaskTwo(); // Uncomment to run tc
+		//testTaskOne();
+		testTaskTwo(); // Uncomment to run tc
 		//testTaskThree();	// Uncomment to run tc
 	}
 	
@@ -103,7 +103,7 @@ public class Seminar3 {
 	private static int getNumberOfPageFaultsFifo(int numberOfFrames)
 	{
 		MemoryManager memoryManager = new MemoryManager(NUMBER_OF_PAGES, PAGE_SIZE, numberOfFrames, BACKING_STORE_FILE, FIFO_PAGE_REPLACEMENT);
-		MemoryProcess mp = new MemoryProcess("resources/addresses.txt", memoryManager);
+		MemoryProcess mp = new MemoryProcess("OS_Seminar_3/java/src/resources/addresses.txt", memoryManager);
 		mp.callMemory();
 		
 		return memoryManager.getNumberOfPageFaults();
@@ -113,7 +113,7 @@ public class Seminar3 {
 	private static int getNumberOfPageFaultsLRU(int numberOfFrames)
 	{
 		MemoryManager memoryManager = new MemoryManager(NUMBER_OF_PAGES, PAGE_SIZE, numberOfFrames, BACKING_STORE_FILE, LRU_PAGE_REPLACEMENT);
-		MemoryProcess mp = new MemoryProcess("resources/addresses.txt", memoryManager);
+		MemoryProcess mp = new MemoryProcess("OS_Seminar_3/java/src/resources/addresses.txt", memoryManager);
 		mp.callMemory();
 		
 		return memoryManager.getNumberOfPageFaults();

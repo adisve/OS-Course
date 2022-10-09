@@ -1,9 +1,12 @@
 package src.memory;
+import java.util.*; 
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class MemoryManager {
@@ -17,6 +20,8 @@ public class MemoryManager {
 	private int myNextFreeFramePosition = 0;
 	private int myNumberOfpageFaults = 0;
 	private int myPageReplacementAlgorithm = 0;
+	private HashSet<Integer> myPageTableSet;
+	private Queue<Integer> pageQueue;
 
 	public MemoryManager(int numberOfPages, int pageSize, int numberOfFrames, String pageFile,
 			int pageReplacementAlgorithm) {
@@ -25,9 +30,10 @@ public class MemoryManager {
 		myPageSize = pageSize;
 		myNumberOfFrames = numberOfFrames;
 		myPageReplacementAlgorithm = pageReplacementAlgorithm;
-
 		initPageTable();
 		myRAM = new byte[myNumberOfFrames * myPageSize];
+		myPageTableSet = new HashSet<Integer>(numberOfFrames);
+		pageQueue = new LinkedList<Integer>();
 
 		try {
 
@@ -46,24 +52,52 @@ public class MemoryManager {
 	}
 
 	public byte readFromMemory(int logicalAddress) {
-		System.out.println(logicalAddress);
 		int pageNumber = getPageNumber(logicalAddress);
 		int offset = getPageOffset(logicalAddress);
-
-		if (myPageTable[pageNumber] == -1) {
+		
+		// If page is not loaded in main memory
+		if (!myPageTableSet.contains(pageNumber)) {
+			System.out.println("Page fault");
 			pageFault(pageNumber);
 		}
-		
-		int frame = myPageTable[pageNumber];
+		int frame = new ArrayList<Integer>(myPageTableSet).indexOf(pageNumber);
 		int physicalAddress = frame * myPageSize + offset;
 		byte data = myRAM[physicalAddress];
-
 		System.out.print("Virtual address: " + logicalAddress);
 		System.out.print(" Physical address: " + physicalAddress);
-		System.out.println(" Value: " + data);
+		System.out.println(" Value: " + data); 
 		return data;
 	}
 
+	private void handlePageFault(int pageNumber) {
+		// myNextFreeFramePosition is never greater than
+		// the length of myPageTable, therefore no error handling.
+		myPageTable[pageNumber] = myNextFreeFramePosition;
+		myNextFreeFramePosition++;
+		myNumberOfpageFaults++;
+	}
+
+	private void handlePageFaultFIFO(int pageNumber) {
+		/// If table set is full of occupied pages,
+		/// we have to perform page replacement
+		if(myPageTableSet.size() >= myNumberOfFrames) {
+			int prevFirstInQueue = pageQueue.peek();
+			pageQueue.poll();
+			myPageTableSet.remove(prevFirstInQueue);
+			myPageTableSet.add(pageNumber);
+			pageQueue.add(pageNumber);
+		}
+		else
+		/// Otherwise, simply add new page number
+		/// to the table set and page queue
+		{
+			myPageTableSet.add(pageNumber);
+			pageQueue.add(pageNumber);
+			myNumberOfFrames++;
+		}
+		myNumberOfpageFaults++;
+	}
+	
 	private int getPageNumber(int logicalAddress) {
 		return Math.floorDiv(logicalAddress, 256);
 	}
@@ -71,6 +105,8 @@ public class MemoryManager {
 	private int getPageOffset(int logicalAddress) {
 		return logicalAddress % 256;
 	}
+
+	
 
 	private void pageFault(int pageNumber) {
 		if (myPageReplacementAlgorithm == Seminar3.NO_PAGE_REPLACEMENT)
@@ -87,7 +123,8 @@ public class MemoryManager {
 
 	private void readFromPageFileToMemory(int pageNumber) {
 		try {
-			int frame = myPageTable[pageNumber];
+			int frame = new ArrayList<Integer>(myPageTableSet).indexOf(pageNumber);
+			System.out.println(frame);
 			myPageFile.seek(pageNumber * myPageSize);
 			for (int b = 0; b < myPageSize; b++)
 				myRAM[frame * myPageSize + b] = myPageFile.readByte();
@@ -100,18 +137,7 @@ public class MemoryManager {
 		return myNumberOfpageFaults;
 	}
 
-	private void handlePageFault(int pageNumber) {
-		myNumberOfpageFaults++;
-		myPageTable[pageNumber] = 0;
-	}
-
-	private void handlePageFaultFIFO(int pageNumber) {
-		// Implement by student in task two
-		// this solution allows different size of physical and logical memory
-		// page replacement using FIFO
-		// Note depending on your solution, you might need to change parts of the
-		// supplied code, this is allowed.
-	}
+	
 
 	private void handlePageFaultLRU(int pageNumber) {
 		// Implement by student in task three
