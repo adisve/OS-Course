@@ -43,17 +43,13 @@ void check(int phnum)
  
 void pick_up_chopstick(int phnum)
 {
- 
     sem_wait(&mutex);
- 
     state[phnum] = HUNGRY;
- 
+
     printf("Philosopher %d is hungry\n", phnum + 1);
  
     check(phnum);
- 
     sem_post(&mutex);
- 
     sem_wait(&S[phnum]);
  
     sleep(1);
