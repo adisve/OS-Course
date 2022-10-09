@@ -5,7 +5,7 @@ public class Table {
 	private int nbrOfChopsticks;
 	private final boolean available = true;
 	private final boolean unavailable = false;
-	private boolean chopstick[]; // true if chopstick[i] is available
+	private boolean chopstick[];
 
 	public Table(int nbrOfSticks) {
 		nbrOfChopsticks = nbrOfSticks;

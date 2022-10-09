@@ -46,13 +46,15 @@ public class MemoryManager {
 	}
 
 	public byte readFromMemory(int logicalAddress) {
+		System.out.println(logicalAddress);
 		int pageNumber = getPageNumber(logicalAddress);
 		int offset = getPageOffset(logicalAddress);
+
 		if (myPageTable[pageNumber] == -1) {
 			pageFault(pageNumber);
 		}
+		
 		int frame = myPageTable[pageNumber];
-
 		int physicalAddress = frame * myPageSize + offset;
 		byte data = myRAM[physicalAddress];
 
@@ -63,15 +65,11 @@ public class MemoryManager {
 	}
 
 	private int getPageNumber(int logicalAddress) {
-		Arrays.sort(myPageTable);
-        int res = Arrays.binarySearch(myPageTable, logicalAddress);
- 
-        return 0;
+		return Math.floorDiv(logicalAddress, 256);
 	}
 
 	private int getPageOffset(int logicalAddress) {
-		// Implement by student in task one
-		return 0;
+		return logicalAddress % 256;
 	}
 
 	private void pageFault(int pageNumber) {
@@ -103,15 +101,8 @@ public class MemoryManager {
 	}
 
 	private void handlePageFault(int pageNumber) {
-		/// If the pageNumber is not found in the current page table
-		/// we will try to iterate over the page table and find an empty
-		/// place for it.
-		for (int i = 0; i < myPageTable.length; i++) {
-			if(myPageTable[i] == -1) {
-				myPageTable[i] = pageNumber;
-			}
-		}
-
+		myNumberOfpageFaults++;
+		myPageTable[pageNumber] = 0;
 	}
 
 	private void handlePageFaultFIFO(int pageNumber) {
