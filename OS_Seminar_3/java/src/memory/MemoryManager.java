@@ -57,7 +57,6 @@ public class MemoryManager {
 		
 		// If page is not loaded in main memory
 		if (!myPageTableSet.contains(pageNumber)) {
-			System.out.println("Page fault");
 			pageFault(pageNumber);
 		}
 		int frame = new ArrayList<Integer>(myPageTableSet).indexOf(pageNumber);
@@ -81,7 +80,7 @@ public class MemoryManager {
 	private void handlePageFaultFIFO(int pageNumber) {
 		/// If table set is full of occupied pages,
 		/// we have to perform page replacement
-		if(myPageTableSet.size() >= myNumberOfFrames) {
+		if(myNextFreeFramePosition == myNumberOfFrames) {
 			int prevFirstInQueue = pageQueue.peek();
 			pageQueue.poll();
 			myPageTableSet.remove(prevFirstInQueue);
@@ -94,7 +93,7 @@ public class MemoryManager {
 		{
 			myPageTableSet.add(pageNumber);
 			pageQueue.add(pageNumber);
-			myNumberOfFrames++;
+			myNextFreeFramePosition++;
 		}
 		myNumberOfpageFaults++;
 	}
