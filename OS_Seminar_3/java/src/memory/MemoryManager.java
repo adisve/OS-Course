@@ -72,7 +72,8 @@ public class MemoryManager {
 	private void handlePageFault(int pageNumber) {
 		// myNextFreeFramePosition is never greater than
 		// the length of myPageTable, therefore no error handling.
-		myPageTable[pageNumber] = myNextFreeFramePosition;
+		myPageTableSet.add(pageNumber);
+		pageQueue.add(pageNumber);
 		myNextFreeFramePosition++;
 		myNumberOfpageFaults++;
 	}
