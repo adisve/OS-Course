@@ -1,13 +1,10 @@
 package src.memory;
 import java.util.*; 
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Scanner;
 
 public class MemoryManager {
 
@@ -20,9 +17,8 @@ public class MemoryManager {
 	private int myNextFreeFramePosition = 0;
 	private int myNumberOfpageFaults = 0;
 	private int myPageReplacementAlgorithm = 0;
+	private Deque<Integer> linkedListDeque = new LinkedList<>();   
 	private HashSet<Integer> myPageTableSet;
-	private HashMap<Integer, Integer> pageIndices = new HashMap<Integer, Integer>();
-	private Queue<Integer> pageQueue;
 
 	public MemoryManager(int numberOfPages, int pageSize, int numberOfFrames, String pageFile,
 			int pageReplacementAlgorithm) {
@@ -31,10 +27,9 @@ public class MemoryManager {
 		myPageSize = pageSize;
 		myNumberOfFrames = numberOfFrames;
 		myPageReplacementAlgorithm = pageReplacementAlgorithm;
-		initPageTable();
+		//initPageTable();
 		myRAM = new byte[myNumberOfFrames * myPageSize];
 		myPageTableSet = new HashSet<Integer>(numberOfFrames);
-		pageQueue = new LinkedList<Integer>();
 
 		try {
 
@@ -45,20 +40,28 @@ public class MemoryManager {
 		}
 	}
 
-	private void initPageTable() {
+	/* private void initPageTable() {
 		myPageTable = new int[myNumberOfPages];
 		for (int n = 0; n < myNumberOfPages; n++) {
 			myPageTable[n] = -1;
 		}
-	}
+	} */
 
 	public byte readFromMemory(int logicalAddress) {
 		int pageNumber = getPageNumber(logicalAddress);
 		int offset = getPageOffset(logicalAddress);
 		
-		// If page is not loaded in main memory
+		// If page is not loaded in main memory,
+		// find in approximately O(1) lookup time
 		if (!myPageTableSet.contains(pageNumber)) {
 			pageFault(pageNumber);
+		}
+		// If this page exists in the table set
+		else if (myPageReplacementAlgorithm == Seminar3.LRU_PAGE_REPLACEMENT)
+		{
+			// Move page to head of linked list
+			linkedListDeque.remove(pageNumber);
+			linkedListDeque.addFirst(pageNumber);
 		}
 		int frame = new ArrayList<Integer>(myPageTableSet).indexOf(pageNumber);
 		int physicalAddress = frame * myPageSize + offset;
@@ -73,55 +76,25 @@ public class MemoryManager {
 		// myNextFreeFramePosition is never greater than
 		// the length of myPageTable, therefore no error handling.
 		myPageTableSet.add(pageNumber);
-		pageQueue.add(pageNumber);
+		linkedListDeque.add(pageNumber);
 		myNextFreeFramePosition++;
 		myNumberOfpageFaults++;
 	}
 
 	private void handlePageFaultFIFO(int pageNumber) {
-		/// If table set is full of occupied pages,
-		/// we have to perform page replacement
-		if(myNextFreeFramePosition == myNumberOfFrames) {
-			int prevFirstInQueue = pageQueue.peek();
-			pageQueue.poll();
-			myPageTableSet.remove(prevFirstInQueue);
-			myPageTableSet.add(pageNumber);
-			pageQueue.add(pageNumber);
+		// Check if page deque size is at MAX capacity,
+		// if true then remove item from page table set.
+		if(linkedListDeque.size() == myNumberOfFrames) {
+			myPageTableSet.remove(linkedListDeque.removeLast());
 		}
-		else
-		/// Otherwise, simply add new page number
-		/// to the table set and page queue
-		{
-			myPageTableSet.add(pageNumber);
-			pageQueue.add(pageNumber);
-			myNextFreeFramePosition++;
-		}
+		// Add page to head of queue
+		linkedListDeque.addFirst(pageNumber);
+		myPageTableSet.add(pageNumber);
 		myNumberOfpageFaults++;
 	}
 
 	private void handlePageFaultLRU(int pageNumber) {
-		if(myNextFreeFramePosition == myNumberOfFrames) {
-			int LRU = Integer.MAX_VALUE;
-			int MIN = Integer.MIN_VALUE;
-			Arrays.asList(myPageTableSet);
-			for (int tableItem : myPageTableSet) {
-				if(pageIndices.get(tableItem) < LRU) {
-					LRU = pageIndices.get(tableItem);
-					MIN = tableItem;
-				} 
-			}
-			myPageTableSet.remove(MIN);
-			pageIndices.remove(MIN);
-			myPageTableSet.add(pageNumber);
-			pageIndices.put(pageNumber, myNextFreeFramePosition);
-		}
-		else
-		{
-			myPageTableSet.add(pageNumber);
-			pageIndices.put(pageNumber, myNextFreeFramePosition);
-			myNextFreeFramePosition++;
-		}
-		myNumberOfpageFaults++;
+		handlePageFaultFIFO(pageNumber);
 	}
 	
 	private int getPageNumber(int logicalAddress) {
@@ -165,3 +138,13 @@ public class MemoryManager {
 
 	
 }
+
+
+class Cache {
+	Map<Integer, Integer> cache;        
+	int size;         
+	public Cache(int size){            
+	  cache = new LinkedHashMap<>();            
+	   this.size = size;        
+	}
+ }
