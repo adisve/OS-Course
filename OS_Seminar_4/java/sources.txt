@@ -1,0 +1,3 @@
+./src/commandshell/AddressParser.java
+./src/commandshell/CommandStrings.java
+./src/commandshell/CommandShell.java
