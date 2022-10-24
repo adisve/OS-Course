@@ -1,2 +1,2 @@
-javac --source-path src -d bin src/commandshell/*.java
-java -cp bin commandshell.CommandShell
+javac --source-path src -d bin src/memory/*.java
+java -cp bin src.memory.Seminar3
