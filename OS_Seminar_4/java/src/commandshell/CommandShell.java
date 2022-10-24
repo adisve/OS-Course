@@ -56,7 +56,7 @@ public class CommandShell {
                 case CommandStrings.copyFile:
                     _copyFile(arguments);
                     break;
-                case CommandStrings.whichComputer:
+                case CommandStrings.nic:
                     _nicDump(arguments);
                     break;
                 case CommandStrings.end:
