@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,7 +88,7 @@ public class NicHandle implements Runnable {
     }
 
     private void writeNic(NetworkInterface nic) {
-        try (PrintWriter writer = new PrintWriter(NICDUMP)) {
+        try {
             Enumeration<InetAddress> inetAddresses = nic.getInetAddresses();
             ListIterator<String> inetTypes = Arrays.asList("IPv6", "IPv4").listIterator();
     
@@ -103,13 +104,10 @@ public class NicHandle implements Runnable {
             NICDUMPSTRINGS.add(String.format("\nMTU size: %s", nic.getMTU()));
             NICDUMPSTRINGS.add(String.format("\nIs up: %s", nic.isUp()));
             NICDUMPSTRINGS.add(String.format("\nSupports multicast: %s\n\n", nic.supportsMulticast()));
-
-        } catch (FileNotFoundException fileNotFoundException) {
-            System.out.println("ERROR: File could not be created and written to");
-            fileNotFoundException.printStackTrace();
-        } catch (SocketException socketException) {
-            System.out.println("ERROR: Socket exception occurred");
+        } catch (SocketException e) {
+            System.out.println("\nERROR: Socket exception occurred. Could not wrtie to file\n");
         }
+        
     }
 
     private String _buildMac(byte[] mac) {
