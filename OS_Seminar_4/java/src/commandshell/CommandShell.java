@@ -1,7 +1,6 @@
 package commandshell;
 
 import java.io.*;
-import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -10,10 +9,11 @@ import java.util.stream.Stream;
 
 public class CommandShell {
 
+    final private static NicHandle nicHandle = NicHandle.getInstance();
+
     static void createProcess(String command) throws java.io.IOException {
 
         List<String> input = Arrays.asList(command.split(" "));
-
         ProcessBuilder processBuilder = new ProcessBuilder(input);
         BufferedReader bufferReader = null;
         try {
@@ -56,7 +56,7 @@ public class CommandShell {
                 case CommandStrings.copyFile:
                     _copyFile(arguments);
                     break;
-                case CommandStrings.nic:
+                case CommandStrings.nicDump:
                     _nicDump(arguments);
                     break;
                 case CommandStrings.end:
@@ -80,9 +80,12 @@ public class CommandShell {
     }
 
     private static void _nicDump(String[] arguments) throws SocketException {
-        try (Stream<NetworkInterface> stream = NetworkInterface.networkInterfaces()) {
-            stream.forEach(AddressParser::writeNic);
-            System.out.println("\nWrote list of available NIC's on host device to NIC_DUMP.txt\n");
+        try {
+            Thread thread = new Thread(nicHandle);
+            thread.start();
+            thread.join();
+        } catch (InterruptedException e) {
+            System.out.println("ERROR: Error occurred when running 'nicDump' command");
         }
     }
 
