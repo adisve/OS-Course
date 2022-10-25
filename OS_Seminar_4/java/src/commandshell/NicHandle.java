@@ -25,10 +25,10 @@ import java.util.stream.Stream;
  * of the NIC, it does this by converting it to hexadecimal and separating the bytes for
  * readability.
  * 
- * The _buildIp() function does a similar thing as _buildMac, but with both the IPv4 and IPv6
- * addresses retrieved from the underlying hardware interface. The '00' strings in the result
+ * The _buildIpv4() and _buildIpv6() functions do a similar thing as _buildMac, but with both 
+ * the IPv4 and IPv6 addresses retrieved from the underlying hardware interface. The '00' strings in the result
  * are replaced by double colons ('::') as is usually done with IP addresses in IPv6 format, as
- * seen when running the 'ifconfig' command on a Unix machine.
+ * seen when running the 'ifconfig' command on a Unix machine or ipconfig on windows.
  * The IPv4 address is converted by applying an AND mask of a full word (0xFF) to each byte.
  * 
  */
@@ -36,7 +36,11 @@ public class NicHandle implements Runnable {
 
     final private String IPV4 = "IPv4";
     final private String IPV6 = "IPv6";
-    private String NIC_DUMP = "NIC_DUMP.txt";
+    final private Map<String, String> inetTypes = Map.of(
+        "IPv4", "IPv4",
+        "IPv6", "IPv6"
+        );
+    private final String NIC_DUMP = "NIC_DUMP.txt";
     private ArrayList<String> NIC_DUMP_STRINGS = new ArrayList<>();
     private Stream<NetworkInterface> NIC_STREAM;
     public static NicHandle INSTANCE;
@@ -95,10 +99,6 @@ public class NicHandle implements Runnable {
     private void writeNic(NetworkInterface nic) {
         try {
             Enumeration<InetAddress> inetAddresses = nic.getInetAddresses();
-            Map<String, String> inetTypes = Map.of(
-            "IPv4", "IPv4",
-            "IPv6", "IPv6"
-            );
             NIC_DUMP_STRINGS.add(String.format("\n\n\nSpecifications for Network Interface Card '%s'\n", nic.getName()));
             NIC_DUMP_STRINGS.add(String.format("\nDisplay name: %s", nic.getDisplayName()));
             while (inetAddresses.hasMoreElements()) {
@@ -111,7 +111,18 @@ public class NicHandle implements Runnable {
                 }
                 
                 byte[] ip = inetAddress.getAddress();
-                String ipString = _buildIp(ip, inetType);
+                String ipString;
+                switch (inetType) {
+                    case IPV4:
+                        ipString = _buildIpv4(ip);
+                        break;
+                    case IPV6:
+                        ipString = _buildIpv6(ip);
+                        break;
+                    default:
+                        ipString = "Not available";
+                        break;
+                }
                 NIC_DUMP_STRINGS.add(String.format("\n%s: %s", inetType, ipString));
             }
             NIC_DUMP_STRINGS.add(String.format("\nMAC Address: %s", _buildMac(nic.getHardwareAddress())));
@@ -141,32 +152,31 @@ public class NicHandle implements Runnable {
         return sb.toString();
     }
 
-    private String _buildIp(byte[] ip, String protocolType) {
+    private String _buildIpv6(byte[] ip) {
         if(ip == null) {
             return "Not available";
         }
-        switch (protocolType) {
-            case IPV4:
-                StringBuilder ipv4 = new StringBuilder(10);
-                for (byte b : ip) {
-                    if (ipv4.length() > 0)
-                        ipv4.append('.');
-                    ipv4.append(String.format("%s", b & 0xFF));
-                }
-                return ipv4.toString();
-        
-            case IPV6:
-                StringBuilder ipv6 = new StringBuilder(32);
-                int m = 0;
-                for (byte b : ip) {
-                    if ((m % 2 == 0 && m != 0))
-                        ipv6.append(':');
-                    ipv6.append(String.format("%02X", b));
-                    m++;
-                }
-                return ipv6.toString().replaceAll("00",":").replaceAll("((:)\\2{2})\\2+", "::");
-            default:
-                return "";
+        StringBuilder ipv6 = new StringBuilder(32);
+        int m = 0;
+        for (byte b : ip) {
+            if ((m % 2 == 0 && m != 0))
+                ipv6.append(':');
+            ipv6.append(String.format("%02X", b));
+            m++;
         }
+        return ipv6.toString().replaceAll("00",":").replaceAll("((:)\\2{2})\\2+", "::");
+    }
+
+    private String _buildIpv4(byte[] ip) {
+        if(ip == null) {
+            return "Not available";
+        }
+        StringBuilder ipv4 = new StringBuilder(10);
+        for (byte b : ip) {
+            if (ipv4.length() > 0)
+                ipv4.append('.');
+            ipv4.append(String.format("%s", b & 0xFF));
+        }
+        return ipv4.toString();
     }
 }
