@@ -1,15 +1,13 @@
 package commandshell;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.ListIterator;
+import java.util.Map;
 import java.util.stream.Stream;
 
 
@@ -34,7 +32,7 @@ import java.util.stream.Stream;
  * The IPv4 address is converted by applying an AND mask of a full word (0xFF) to each byte.
  * 
  */
-public class NicHandle implements Runnable {
+public class NicHandle {
 
     final private String IPV4 = "IPv4";
     final private String IPV6 = "IPv6";
@@ -56,7 +54,6 @@ public class NicHandle implements Runnable {
         return INSTANCE;
     }
 
-    @Override
     public void run() {
         if(INSTANCE == null) 
         {
@@ -90,13 +87,22 @@ public class NicHandle implements Runnable {
     private void writeNic(NetworkInterface nic) {
         try {
             Enumeration<InetAddress> inetAddresses = nic.getInetAddresses();
-            ListIterator<String> inetTypes = Arrays.asList("IPv6", "IPv4").listIterator();
-    
+            Map<String, String> inetTypes = Map.of(
+            "IPv4", "IPv4",
+            "IPv6", "IPv6"
+            );
             NICDUMPSTRINGS.add(String.format("\n\n\nSpecifications for Network Interface Card '%s'\n", nic.getName()));
             NICDUMPSTRINGS.add(String.format("\nDisplay name: %s", nic.getDisplayName()));
             while (inetAddresses.hasMoreElements()) {
-                String inetType = inetTypes.next();
-                byte[] ip = inetAddresses.nextElement().getAddress();
+                InetAddress inetAddress = inetAddresses.nextElement();
+                String inetType;
+                if(inetAddress instanceof Inet6Address) {
+                    inetType = inetTypes.get(IPV6);
+                } else {
+                    inetType = inetTypes.get(IPV4);
+                }
+                
+                byte[] ip = inetAddress.getAddress();
                 String ipString = _buildIp(ip, inetType);
                 NICDUMPSTRINGS.add(String.format("\n%s: %s", inetType, ipString));
             }

@@ -80,13 +80,7 @@ public class CommandShell {
     }
 
     private static void _nicDump(String[] arguments) throws SocketException {
-        try {
-            Thread thread = new Thread(nicHandle);
-            thread.start();
-            thread.join();
-        } catch (InterruptedException e) {
-            System.out.println("ERROR: Error occurred when running 'nicDump' command");
-        }
+        nicHandle.run();
     }
 
     private static void _copyFile(String[] arguments) throws IOException {
