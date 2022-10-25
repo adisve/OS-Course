@@ -7,7 +7,6 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.stream.Stream;
 
 
@@ -33,13 +32,10 @@ import java.util.stream.Stream;
  * 
  */
 public class NicHandle implements Runnable {
-
-    final private String IPV4 = "IPv4";
-    final private String IPV6 = "IPv6";
-    final private Map<String, String> inetTypes = Map.of(
-        "IPv4", "IPv4",
-        "IPv6", "IPv6"
-        );
+    enum InetType {
+        IPV4,
+        IPV6
+    }
     private final String NIC_DUMP = "NIC_DUMP.txt";
     private ArrayList<String> NIC_DUMP_STRINGS = new ArrayList<>();
     private Stream<NetworkInterface> NIC_STREAM;
@@ -47,9 +43,9 @@ public class NicHandle implements Runnable {
 
     
     /**
-     * Gives CommandShell class access to a singleton
+     * Gives CommandShell access to a Singleton
      * instance of NicHandle.
-     * @return [NicHandle]
+     * @return: NicHandle
      */
     public static NicHandle getInstance() {
         if(INSTANCE == null) {
@@ -57,7 +53,6 @@ public class NicHandle implements Runnable {
         }
         return INSTANCE;
     }
-
     
     @Override
     public void run() {
@@ -102,16 +97,16 @@ public class NicHandle implements Runnable {
             NIC_DUMP_STRINGS.add(String.format("\n\n\nSpecifications for Network Interface Card '%s'\n", nic.getName()));
             NIC_DUMP_STRINGS.add(String.format("\nDisplay name: %s", nic.getDisplayName()));
             while (inetAddresses.hasMoreElements()) {
-                InetAddress inetAddress = inetAddresses.nextElement();
-                String inetType;
-                if(inetAddress instanceof Inet6Address) {
-                    inetType = inetTypes.get(IPV6);
-                } else {
-                    inetType = inetTypes.get(IPV4);
-                }
-                
-                byte[] ip = inetAddress.getAddress();
                 String ipString;
+                InetType inetType;
+                InetAddress inetAddress = inetAddresses.nextElement();
+                byte[] ip = inetAddress.getAddress();
+
+                if(inetAddress instanceof Inet6Address) {
+                    inetType = InetType.IPV6;
+                } else {
+                    inetType = InetType.IPV4;
+                }
                 switch (inetType) {
                     case IPV4:
                         ipString = _buildIpv4(ip);
@@ -132,7 +127,6 @@ public class NicHandle implements Runnable {
         } catch (SocketException e) {
             System.out.println("\nERROR: Socket exception occurred. Could not wrtie to file\n");
         }
-        
     }
 
     /**
@@ -152,21 +146,29 @@ public class NicHandle implements Runnable {
         return sb.toString();
     }
 
+    /**
+     * @param ip: Byte stream of IPv6 address
+     * @return: String version of IPv6 address
+     */
     private String _buildIpv6(byte[] ip) {
         if(ip == null) {
             return "Not available";
         }
         StringBuilder ipv6 = new StringBuilder(32);
-        int m = 0;
+        int bound = 0;
         for (byte b : ip) {
-            if ((m % 2 == 0 && m != 0))
+            if ((bound % 2 == 0 && bound != 0))
                 ipv6.append(':');
             ipv6.append(String.format("%02X", b));
-            m++;
+            bound++;
         }
         return ipv6.toString().replaceAll("00",":").replaceAll("((:)\\2{2})\\2+", "::");
     }
 
+    /**
+     * @param ip: Byte stream of IPv4 address
+     * @return: String version of IPv4 address
+     */
     private String _buildIpv4(byte[] ip) {
         if(ip == null) {
             return "Not available";
