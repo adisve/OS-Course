@@ -32,10 +32,7 @@ import java.util.stream.Stream;
  * 
  */
 public class NicHandle implements Runnable {
-    enum InetType {
-        IPV4,
-        IPV6
-    }
+    enum InetType { IPV4, IPV6 }
     private final String NIC_DUMP = "NIC_DUMP.txt";
     private ArrayList<String> NIC_DUMP_STRINGS = new ArrayList<>();
     private Stream<NetworkInterface> NIC_STREAM;
