@@ -32,13 +32,13 @@ import java.util.stream.Stream;
  * The IPv4 address is converted by applying an AND mask of a full word (0xFF) to each byte.
  * 
  */
-public class NicHandle {
+public class NicHandle implements Runnable {
 
     final private String IPV4 = "IPv4";
     final private String IPV6 = "IPv6";
-    private String NICDUMP = "NIC_DUMP.txt";
-    private ArrayList<String> NICDUMPSTRINGS = new ArrayList<>();
-    private Stream<NetworkInterface> NICSTREAM;
+    private String NIC_DUMP = "NIC_DUMP.txt";
+    private ArrayList<String> NIC_DUMP_STRINGS = new ArrayList<>();
+    private Stream<NetworkInterface> NIC_STREAM;
     public static NicHandle INSTANCE;
 
     
@@ -54,6 +54,8 @@ public class NicHandle {
         return INSTANCE;
     }
 
+    
+    @Override
     public void run() {
         if(INSTANCE == null) 
         {
@@ -61,14 +63,14 @@ public class NicHandle {
            return;
         }
         try {
-            this.NICSTREAM = NetworkInterface.networkInterfaces();
-            if(this.NICSTREAM != null) 
+            this.NIC_STREAM = NetworkInterface.networkInterfaces();
+            if(this.NIC_STREAM != null) 
             {
-                try (PrintWriter writer = new PrintWriter(NICDUMP)) {
-                    NICSTREAM.forEach(INSTANCE::writeNic);
-                    NICDUMPSTRINGS.stream().forEach(writer::println);
+                try (PrintWriter writer = new PrintWriter(NIC_DUMP)) {
+                    NIC_STREAM.forEach(INSTANCE::writeNic);
+                    NIC_DUMP_STRINGS.stream().forEach(writer::println);
                     System.out.println("\nWrote list of available NIC's on host device to NIC_DUMP.txt\n");
-                    NICDUMPSTRINGS.clear();
+                    NIC_DUMP_STRINGS.clear();
                 }
             }
             else
@@ -84,6 +86,12 @@ public class NicHandle {
         
     }
 
+    /**
+     * Adds specifications about a certain NIC to
+     * [NIC_DUMP_STRINGS], that are then parsed and written
+     * to [NIC_DUMP.txt]
+     * @param nic: Specific network interface card
+     */
     private void writeNic(NetworkInterface nic) {
         try {
             Enumeration<InetAddress> inetAddresses = nic.getInetAddresses();
@@ -91,8 +99,8 @@ public class NicHandle {
             "IPv4", "IPv4",
             "IPv6", "IPv6"
             );
-            NICDUMPSTRINGS.add(String.format("\n\n\nSpecifications for Network Interface Card '%s'\n", nic.getName()));
-            NICDUMPSTRINGS.add(String.format("\nDisplay name: %s", nic.getDisplayName()));
+            NIC_DUMP_STRINGS.add(String.format("\n\n\nSpecifications for Network Interface Card '%s'\n", nic.getName()));
+            NIC_DUMP_STRINGS.add(String.format("\nDisplay name: %s", nic.getDisplayName()));
             while (inetAddresses.hasMoreElements()) {
                 InetAddress inetAddress = inetAddresses.nextElement();
                 String inetType;
@@ -104,18 +112,22 @@ public class NicHandle {
                 
                 byte[] ip = inetAddress.getAddress();
                 String ipString = _buildIp(ip, inetType);
-                NICDUMPSTRINGS.add(String.format("\n%s: %s", inetType, ipString));
+                NIC_DUMP_STRINGS.add(String.format("\n%s: %s", inetType, ipString));
             }
-            NICDUMPSTRINGS.add(String.format("\nMAC Address: %s", _buildMac(nic.getHardwareAddress())));
-            NICDUMPSTRINGS.add(String.format("\nMTU size: %s", nic.getMTU()));
-            NICDUMPSTRINGS.add(String.format("\nIs up: %s", nic.isUp()));
-            NICDUMPSTRINGS.add(String.format("\nSupports multicast: %s\n\n", nic.supportsMulticast()));
+            NIC_DUMP_STRINGS.add(String.format("\nMAC Address: %s", _buildMac(nic.getHardwareAddress())));
+            NIC_DUMP_STRINGS.add(String.format("\nMTU size: %s", nic.getMTU()));
+            NIC_DUMP_STRINGS.add(String.format("\nIs up: %s", nic.isUp()));
+            NIC_DUMP_STRINGS.add(String.format("\nSupports multicast: %s\n\n", nic.supportsMulticast()));
         } catch (SocketException e) {
             System.out.println("\nERROR: Socket exception occurred. Could not wrtie to file\n");
         }
         
     }
 
+    /**
+     * @param mac: Byte array of 48-bit MAC address
+     * @return: String version of 48-bit MAC address
+     */
     private String _buildMac(byte[] mac) {
         if(mac == null) {
             return "Not available";
